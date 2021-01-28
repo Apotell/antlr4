@@ -1,73 +1,53 @@
 {
-    // See https://go.microsoft.com//fwlink//?linkid=834763 for more information about this file.
-    "configurations": [
+  // See https://go.microsoft.com//fwlink//?linkid=834763 for more information about this file.
+  "environments": [
+    {
+      "environment": "msvc_x64_x64",
+      "PATH": "${env.PATH};D:\\Git\\bin;D:\\tclkit\\8.7a3-1\\bin"
+    }
+  ],
+  "configurations": [
+    {
+      "name": "x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\Debug",
+      "installRoot": "${projectDir}\\out\\install\\Debug",
+      "cmakeCommandArgs": "--target antlr4_static",
+      "variables": [
         {
-            "name": "x86-Debug",
-            "generator": "Ninja",
-            "configurationType": "Debug",
-            "inheritEnvironments": [ "msvc_x86" ],
-            "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-            "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-            "cmakeCommandArgs": "",
-            "variables": [
-                {
-                    "name": "ANTLR4_INSTALL",
-                    "value": "1"
-                }
-            ],
-            "buildCommandArgs": "-v",
-            "ctestCommandArgs": ""
+          "name": "ANTLR4_INSTALL",
+          "value": "1"
         },
         {
-            "name": "x86-Release",
-            "generator": "Ninja",
-            "configurationType": "RelWithDebInfo",
-            "inheritEnvironments": [ "msvc_x86" ],
-            "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-            "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-            "cmakeCommandArgs": "",
-            "variables": [
-                {
-                    "name": "ANTLR4_INSTALL",
-                    "value": "1"
-                }
-            ],
-            "buildCommandArgs": "-v",
-            "ctestCommandArgs": ""
-        },
-        {
-            "name": "x64-Debug",
-            "generator": "Ninja",
-            "configurationType": "Debug",
-            "inheritEnvironments": [ "msvc_x64_x64" ],
-            "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-            "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-            "cmakeCommandArgs": "",
-            "variables": [
-                {
-                    "name": "ANTLR4_INSTALL",
-                    "value": "1"
-                }
-            ],
-            "buildCommandArgs": "-v",
-            "ctestCommandArgs": ""
-        },
-        {
-            "name": "x64-Release",
-            "generator": "Ninja",
-            "configurationType": "RelWithDebInfo",
-            "inheritEnvironments": [ "msvc_x64_x64" ],
-            "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-            "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-            "cmakeCommandArgs": "",
-            "variables": [
-                {
-                    "name": "ANTLR4_INSTALL",
-                    "value": "1"
-                }
-            ],
-            "buildCommandArgs": "-v",
-            "ctestCommandArgs": ""
+          "name": "WITH_STATIC_CRT",
+          "value": "0"
         }
-    ]
+      ],
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    },
+    {
+      "name": "x64-Release",
+      "generator": "Ninja",
+      "configurationType": "RelWithDebInfo",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\Release",
+      "installRoot": "${projectDir}\\out\\install\\Release",
+      "cmakeCommandArgs": "--target antlr4_static",
+      "variables": [
+        {
+          "name": "ANTLR4_INSTALL",
+          "value": "1"
+        },
+        {
+          "name": "WITH_STATIC_CRT",
+          "value": "0"
+        }
+      ],
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": ""
+    }
+  ]
 }
