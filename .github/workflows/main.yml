@@ -1,0 +1,107 @@
+name: 'main'
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on: [ push ]
+
+jobs:
+  build:
+    name: "${{ matrix.config.artifact-tag }} | ${{ matrix.config.build-type }}"
+
+    runs-on: ${{ matrix.config.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - { os: ubuntu-20.04, artifact-tag: focal-gcc, build-type: debug }
+        - { os: ubuntu-20.04, artifact-tag: focal-gcc, build-type: release }
+        - { os: windows-2022, artifact-tag: windows-cl, build-type: debug }
+        - { os: windows-2022, artifact-tag: windows-cl, build-type: release }
+
+    env:
+      artifact-name: antlr4_${{ matrix.config.artifact-tag }}_${{ matrix.config.build-type }}_${{ github.run_number }}
+
+    steps:
+    - name: Install Core Dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update -qq
+        sudo apt install -y g++-9
+        sudo apt install -y cmake
+        sudo apt install -y build-essential
+        sudo apt install -y ninja-build
+        sudo apt install -y uuid-dev
+
+    - name: Git pull
+      uses: actions/checkout@v3.4.0
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: Build on Linux
+      if: runner.os == 'Linux'
+      shell: bash
+      env:
+        CC: gcc-9
+        CXX: g++-9
+      run: |
+        env
+        which cmake && cmake --version
+        which ninja && ninja --version
+        which $CC && $CC --version
+        which $CXX && $CXX --version
+
+        cd runtime/Cpp
+
+        if [[ "${{ matrix.config.build-type }}" == "debug" ]]; then
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=out/install -DWITH_STATIC_CRT=0 -DANTLR4_INSTALL=1 -S . -B out/build
+        else
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=out/install -DWITH_STATIC_CRT=0 -DANTLR4_INSTALL=1 -S . -B out/build
+        fi
+
+        cmake --build out/build -j `nproc`
+        cmake --install out/build
+
+    - name: Build on Windows
+      if: runner.os == 'Windows'
+      shell: cmd
+      env:
+        CC: cl
+        CXX: cl
+      run: |
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        if %errorlevel% neq 0 exit /b %errorlevel%
+
+        set
+        where cmake && cmake --version
+        where ninja && ninja --version
+        where %CC% && %CC%
+        where %CXX% && %CXX%
+
+        cd runtime/Cpp
+
+        if "${{ matrix.config.build-type }}" EQU "debug" (
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=out/install -DWITH_STATIC_CRT=0 -DANTLR4_INSTALL=1 -S . -B out/build
+        ) else (
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=out/install -DWITH_STATIC_CRT=0 -DANTLR4_INSTALL=1 -S . -B out/build
+        )
+
+        cmake --build out/build -j %NUMBER_OF_PROCESSORS%
+        cmake --install out/build
+
+    - name: Build compressed artifacts
+      if: always()
+      shell: bash
+      run: |
+        cd runtime/Cpp/out
+        mv install ${{ env.artifact-name }}
+        tar czfp ${{ env.artifact-name }}.tar.gz ${{ env.artifact-name }}
+
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.artifact-name }}
+        path: runtime/Cpp/out/${{ env.artifact-name }}.tar.gz
