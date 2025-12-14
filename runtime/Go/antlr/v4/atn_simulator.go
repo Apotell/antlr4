@@ -4,7 +4,7 @@
 
 package antlr
 
-var ATNSimulatorError = NewDFAState(0x7FFFFFFF, NewBaseATNConfigSet(false))
+var ATNSimulatorError = NewDFAState(0x7FFFFFFF, NewATNConfigSet(false))
 
 type IATNSimulator interface {
 	SharedContextCache() *PredictionContextCache
@@ -18,13 +18,13 @@ type BaseATNSimulator struct {
 	decisionToDFA      []*DFA
 }
 
-func (b *BaseATNSimulator) getCachedContext(context PredictionContext) PredictionContext {
+func (b *BaseATNSimulator) getCachedContext(context *PredictionContext) *PredictionContext {
 	if b.sharedContextCache == nil {
 		return context
 	}
-	
-	visited := make(map[PredictionContext]PredictionContext)
-	
+
+	//visited := NewJMap[*PredictionContext, *PredictionContext, Comparator[*PredictionContext]](pContextEqInst, PredictionVisitedCollection, "Visit map in getCachedContext()")
+	visited := NewVisitRecord()
 	return getCachedBasePredictionContext(context, b.sharedContextCache, visited)
 }
 

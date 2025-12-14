@@ -46,7 +46,7 @@ func (p *PredPrediction) String() string {
 // reached via a different set of rule invocations.
 type DFAState struct {
 	stateNumber int
-	configs     ATNConfigSet
+	configs     *ATNConfigSet
 
 	// edges elements point to the target of the symbol. Shift up by 1 so (-1)
 	// Token.EOF maps to the first element.
@@ -82,9 +82,9 @@ type DFAState struct {
 	predicates []*PredPrediction
 }
 
-func NewDFAState(stateNumber int, configs ATNConfigSet) *DFAState {
+func NewDFAState(stateNumber int, configs *ATNConfigSet) *DFAState {
 	if configs == nil {
-		configs = NewBaseATNConfigSet(false)
+		configs = NewATNConfigSet(false)
 	}
 
 	return &DFAState{configs: configs, stateNumber: stateNumber}
@@ -95,7 +95,7 @@ func (d *DFAState) GetAltSet() []int {
 	var alts []int
 
 	if d.configs != nil {
-		for _, c := range d.configs.GetItems() {
+		for _, c := range d.configs.configs {
 			alts = append(alts, c.GetAlt())
 		}
 	}

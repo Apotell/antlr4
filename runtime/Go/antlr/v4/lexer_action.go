@@ -67,11 +67,13 @@ func (b *BaseLexerAction) getIsPositionDependent() bool {
 }
 
 func (b *BaseLexerAction) Hash() int {
-	return b.actionType
+	h := murmurInit(0)
+	h = murmurUpdate(h, b.actionType)
+	return murmurFinish(h, 1)
 }
 
 func (b *BaseLexerAction) Equals(other LexerAction) bool {
-	return b == other
+	return b.actionType == other.getActionType()
 }
 
 // LexerSkipAction implements the [BaseLexerAction.Skip] lexer action by calling [Lexer.Skip].
@@ -98,6 +100,10 @@ func (l *LexerSkipAction) execute(lexer Lexer) {
 // String returns a string representation of the current [LexerSkipAction].
 func (l *LexerSkipAction) String() string {
 	return "skip"
+}
+
+func (b *LexerSkipAction) Equals(other LexerAction) bool {
+	return other.getActionType() == LexerActionTypeSkip
 }
 
 //	Implements the {@code type} lexer action by calling {@link Lexer//setType}

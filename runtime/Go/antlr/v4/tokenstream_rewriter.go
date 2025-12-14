@@ -174,7 +174,7 @@ func (op *BaseRewriteOperation) String() string {
 		op.tokens.Get(op.GetIndex()),
 		op.text,
 	)
-	
+
 }
 
 type InsertBeforeOp struct {
@@ -304,7 +304,7 @@ func (tsr *TokenStreamRewriter) RollbackDefault(instructionIndex int) {
 	tsr.Rollback(DefaultProgramName, instructionIndex)
 }
 
-// DeleteProgram reset the program so that no instructions exist
+// DeleteProgram Reset the program so that no instructions exist
 func (tsr *TokenStreamRewriter) DeleteProgram(programName string) {
 	tsr.Rollback(programName, MinTokenIndex) //TODO: double test on that cause lower bound is not included
 }
@@ -441,14 +441,14 @@ func (tsr *TokenStreamRewriter) GetTextDefault() string {
 
 // GetText returns the text from the original tokens altered per the
 // instructions given to this rewriter.
-func (tsr *TokenStreamRewriter) GetText(programName string, interval *Interval) string {
+func (tsr *TokenStreamRewriter) GetText(programName string, interval Interval) string {
 	rewrites := tsr.programs[programName]
 	start := interval.Start
 	stop := interval.Stop
 	// ensure start/end are in range
 	stop = min(stop, tsr.tokens.Size()-1)
 	start = max(start, 0)
-	if rewrites == nil || len(rewrites) == 0 {
+	if len(rewrites) == 0 {
 		return tsr.tokens.GetTextFromInterval(interval) // no instructions to execute
 	}
 	buf := bytes.Buffer{}

@@ -165,7 +165,7 @@ const (
 // [ATNConfigSet.hasSemanticContext]), this algorithm makes a copy of
 // the configurations to strip out all the predicates so that a standard
 // [ATNConfigSet] will merge everything ignoring predicates.
-func PredictionModehasSLLConflictTerminatingPrediction(mode int, configs ATNConfigSet) bool {
+func PredictionModehasSLLConflictTerminatingPrediction(mode int, configs *ATNConfigSet) bool {
 
 	// Configs in rule stop states indicate reaching the end of the decision
 	// rule (local context) or end of start rule (full context). If all
@@ -181,13 +181,13 @@ func PredictionModehasSLLConflictTerminatingPrediction(mode int, configs ATNConf
 		// Don't bother with combining configs from different semantic
 		// contexts if we can fail over to full LL costs more time
 		// since we'll often fail over anyway.
-		if configs.HasSemanticContext() {
+		if configs.hasSemanticContext {
 			// dup configs, tossing out semantic predicates
-			dup := NewBaseATNConfigSet(false)
-			for _, c := range configs.GetItems() {
+			dup := NewATNConfigSet(false)
+			for _, c := range configs.configs {
 
-				//				NewBaseATNConfig({semanticContext:}, c)
-				c = NewBaseATNConfig2(c, SemanticContextNone)
+				//				NewATNConfig({semanticContext:}, c)
+				c = NewATNConfig2(c, SemanticContextNone)
 				dup.Add(c, nil)
 			}
 			configs = dup
@@ -205,8 +205,8 @@ func PredictionModehasSLLConflictTerminatingPrediction(mode int, configs ATNConf
 // context).
 //
 // The func returns true if any configuration in the supplied configs is in a [RuleStopState]
-func PredictionModehasConfigInRuleStopState(configs ATNConfigSet) bool {
-	for _, c := range configs.GetItems() {
+func PredictionModehasConfigInRuleStopState(configs *ATNConfigSet) bool {
+	for _, c := range configs.configs {
 		if _, ok := c.GetState().(*RuleStopState); ok {
 			return true
 		}
@@ -221,9 +221,9 @@ func PredictionModehasConfigInRuleStopState(configs ATNConfigSet) bool {
 //
 // the func returns true if all configurations in configs are in a
 // [RuleStopState]
-func PredictionModeallConfigsInRuleStopStates(configs ATNConfigSet) bool {
+func PredictionModeallConfigsInRuleStopStates(configs *ATNConfigSet) bool {
 
-	for _, c := range configs.GetItems() {
+	for _, c := range configs.configs {
 		if _, ok := c.GetState().(*RuleStopState); !ok {
 			return false
 		}
@@ -472,10 +472,10 @@ func PredictionModeGetAlts(altsets []*BitSet) *BitSet {
 //
 //	for each configuration c in configs:
 //	   map[c] U= c.ATNConfig.alt // map hash/equals uses s and x, not alt and not pred
-func PredictionModegetConflictingAltSubsets(configs ATNConfigSet) []*BitSet {
-	configToAlts := NewJMap[ATNConfig, *BitSet, *ATNAltConfigComparator[ATNConfig]](atnAltCfgEqInst)
+func PredictionModegetConflictingAltSubsets(configs *ATNConfigSet) []*BitSet {
+	configToAlts := NewJMap[*ATNConfig, *BitSet, *ATNAltConfigComparator[*ATNConfig]](atnAltCfgEqInst, AltSetCollection, "PredictionModegetConflictingAltSubsets()")
 
-	for _, c := range configs.GetItems() {
+	for _, c := range configs.configs {
 
 		alts, ok := configToAlts.Get(c)
 		if !ok {
@@ -492,10 +492,10 @@ func PredictionModegetConflictingAltSubsets(configs ATNConfigSet) []*BitSet {
 //
 //	for each configuration c in configs:
 //	   map[c.ATNConfig.state] U= c.ATNConfig.alt}
-func PredictionModeGetStateToAltMap(configs ATNConfigSet) *AltDict {
+func PredictionModeGetStateToAltMap(configs *ATNConfigSet) *AltDict {
 	m := NewAltDict()
 
-	for _, c := range configs.GetItems() {
+	for _, c := range configs.configs {
 		alts := m.Get(c.GetState().String())
 		if alts == nil {
 			alts = NewBitSet()
@@ -506,7 +506,7 @@ func PredictionModeGetStateToAltMap(configs ATNConfigSet) *AltDict {
 	return m
 }
 
-func PredictionModehasStateAssociatedWithOneAlt(configs ATNConfigSet) bool {
+func PredictionModehasStateAssociatedWithOneAlt(configs *ATNConfigSet) bool {
 	values := PredictionModeGetStateToAltMap(configs).values()
 	for i := 0; i < len(values); i++ {
 		if values[i].(*BitSet).length() == 1 {

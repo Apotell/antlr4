@@ -29,17 +29,17 @@ set(ANTLR4_WITH_STATIC_CRT OFF)
 # By default the latest version of antlr4 will be used.  You can specify a
 # specific, stable version by setting a repository tag value or a link
 # to a zip file containing the libary source.
-# set(ANTLR4_TAG 4.12.0)
-# set(ANTLR4_ZIP_REPOSITORY https://github.com/antlr/antlr4/archive/refs/tags/4.12.0.zip)
+# set(ANTLR4_TAG 4.13.2)
+# set(ANTLR4_ZIP_REPOSITORY https://github.com/antlr/antlr4/archive/refs/tags/4.13.2.zip)
 
 # add external build for antlrcpp
 include(ExternalAntlr4Cpp)
-# add antrl4cpp artifacts to project environment
+# add antlr4cpp artifacts to project environment
 include_directories(${ANTLR4_INCLUDE_DIRS})
 
 # set variable pointing to the antlr tool that supports C++
 # this is not required if the jar file can be found under PATH environment
-set(ANTLR_EXECUTABLE /home/user/antlr-4.12.0-complete.jar)
+set(ANTLR_EXECUTABLE /home/user/antlr-4.13.2-complete.jar)
 # add macros to generate ANTLR Cpp code from grammar
 find_package(ANTLR REQUIRED)
 
@@ -137,7 +137,7 @@ By defualt the ANTLR C++ runtime source is cloned from GitHub. However, users ma
 
 Visual C++ compiler users may want to additionally define `ANTLR4_WITH_STATIC_CRT` before including the file. Set `ANTLR4_WITH_STATIC_CRT` to true if ANTLR4 C++ runtime library should be compiled with `/MT` flag, otherwise will be compiled with `/MD` flag. This variable has a default value of `OFF`. Changing `ANTLR4_WITH_STATIC_CRT` after building the library may require reinitialization of CMake or `clean` for the library to get rebuilt.
 
-You may need to modify your local copy of ExternalAntlr4Cpp.cpp to modify some build settings. For example, to specify the C++ standard to use when building the runtime, add `-DCMAKE_CXX_STANDARD:STRING=17` to `CMAKE_CACHE_ARGS`.
+You may need to modify your local copy of ExternalAntlr4Cpp.cmake to modify some build settings. For example, to specify the C++ standard to use when building the runtime, add `-DCMAKE_CXX_STANDARD:STRING=17` to `CMAKE_CACHE_ARGS`.
 
 ### Examples
 

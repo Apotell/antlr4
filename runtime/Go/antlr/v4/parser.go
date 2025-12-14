@@ -152,6 +152,9 @@ func (p *BaseParser) Match(ttype int) Token {
 		p.Consume()
 	} else {
 		t = p.errHandler.RecoverInline(p)
+		if p.HasError() {
+			return nil
+		}
 		if p.BuildParseTrees && t.GetTokenIndex() == -1 {
 
 			// we must have conjured up a new token during single token
@@ -664,7 +667,7 @@ func (p *BaseParser) GetDFAStrings() string {
 func (p *BaseParser) DumpDFA() {
 	seenOne := false
 	for _, dfa := range p.Interpreter.decisionToDFA {
-		if dfa.states.Len() > 0 {
+		if dfa.Len() > 0 {
 			if seenOne {
 				fmt.Println()
 			}

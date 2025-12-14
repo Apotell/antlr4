@@ -9,8 +9,10 @@ import (
 	"errors"
 	"fmt"
 	"math/bits"
+	"os"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 func intMin(a, b int) int {
@@ -45,23 +47,6 @@ func (s *IntStack) Pop() (int, error) {
 
 func (s *IntStack) Push(e int) {
 	*s = append(*s, e)
-}
-
-func standardEqualsFunction(a Collectable[any], b Collectable[any]) bool {
-
-	return a.Equals(b)
-}
-
-func standardHashFunction(a interface{}) int {
-	if h, ok := a.(hasher); ok {
-		return h.Hash()
-	}
-
-	panic("Not 'Hasher'")
-}
-
-type hasher interface {
-	Hash() int
 }
 
 const bitsPerWord = 64
@@ -245,37 +230,6 @@ func (a *AltDict) values() []interface{} {
 	return vs
 }
 
-type DoubleDict struct {
-	data map[int]map[int]interface{}
-}
-
-func NewDoubleDict() *DoubleDict {
-	dd := new(DoubleDict)
-	dd.data = make(map[int]map[int]interface{})
-	return dd
-}
-
-func (d *DoubleDict) Get(a, b int) interface{} {
-	data := d.data[a]
-
-	if data == nil {
-		return nil
-	}
-
-	return data[b]
-}
-
-func (d *DoubleDict) set(a, b int, o interface{}) {
-	data := d.data[a]
-
-	if data == nil {
-		data = make(map[int]interface{})
-		d.data[a] = data
-	}
-
-	data[b] = o
-}
-
 func EscapeWhitespace(s string, escapeSpaces bool) string {
 
 	s = strings.Replace(s, "\t", "\\t", -1)
@@ -350,4 +304,78 @@ func murmurFinish(h int, numberOfWords int) int {
 	hash ^= hash >> 16
 
 	return int(hash)
+}
+
+func isDirectory(dir string) (bool, error) {
+	fileInfo, err := os.Stat(dir)
+	if err != nil {
+		switch {
+		case errors.Is(err, syscall.ENOENT):
+			// The given directory does not exist, so we will try to create it
+			//
+			err = os.MkdirAll(dir, 0755)
+			if err != nil {
+				return false, err
+			}
+
+			return true, nil
+		case err != nil:
+			return false, err
+		default:
+		}
+	}
+	return fileInfo.IsDir(), err
+}
+
+// intSlicesEqual returns true if the two slices of ints are equal, and is a little
+// faster than slices.Equal.
+func intSlicesEqual(s1, s2 []int) bool {
+	if s1 == nil && s2 == nil {
+		return true
+	}
+	if s1 == nil || s2 == nil {
+		return false
+	}
+	if len(s1) == 0 && len(s2) == 0 {
+		return true
+	}
+
+	if len(s1) == 0 || len(s2) == 0 || len(s1) != len(s2) {
+		return false
+	}
+	// If the slices are using the same memory, then they are the same slice
+	if &s1[0] == &s2[0] {
+		return true
+	}
+	for i, v := range s1 {
+		if v != s2[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func pcSliceEqual(s1, s2 []*PredictionContext) bool {
+	if s1 == nil && s2 == nil {
+		return true
+	}
+	if s1 == nil || s2 == nil {
+		return false
+	}
+	if len(s1) == 0 && len(s2) == 0 {
+		return true
+	}
+	if len(s1) == 0 || len(s2) == 0 || len(s1) != len(s2) {
+		return false
+	}
+	// If the slices are using the same memory, then they are the same slice
+	if &s1[0] == &s2[0] {
+		return true
+	}
+	for i, v := range s1 {
+		if !v.Equals(s2[i]) {
+			return false
+		}
+	}
+	return true
 }

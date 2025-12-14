@@ -29,11 +29,12 @@ func NewLexerActionExecutor(lexerActions []LexerAction) *LexerActionExecutor {
 	l.lexerActions = lexerActions
 
 	// Caches the result of {@link //hashCode} since the hash code is an element
-	// of the performance-critical {@link LexerATNConfig//hashCode} operation.
-	l.cachedHash = murmurInit(57)
+	// of the performance-critical {@link ATNConfig//hashCode} operation.
+	l.cachedHash = murmurInit(0)
 	for _, a := range lexerActions {
 		l.cachedHash = murmurUpdate(l.cachedHash, a.Hash())
 	}
+	l.cachedHash = murmurFinish(l.cachedHash, len(lexerActions))
 
 	return l
 }
@@ -41,6 +42,7 @@ func NewLexerActionExecutor(lexerActions []LexerAction) *LexerActionExecutor {
 // LexerActionExecutorappend creates a [LexerActionExecutor] which executes the actions for
 // the input [LexerActionExecutor] followed by a specified
 // [LexerAction].
+// TODO: This does not match the Java code
 func LexerActionExecutorappend(lexerActionExecutor *LexerActionExecutor, lexerAction LexerAction) *LexerActionExecutor {
 	if lexerActionExecutor == nil {
 		return NewLexerActionExecutor([]LexerAction{lexerAction})
@@ -76,20 +78,15 @@ func LexerActionExecutorappend(lexerActionExecutor *LexerActionExecutor, lexerAc
 //
 // The func returns a [LexerActionExecutor] that stores input stream offsets
 // for all position-dependent lexer actions.
-//
 func (l *LexerActionExecutor) fixOffsetBeforeMatch(offset int) *LexerActionExecutor {
 	var updatedLexerActions []LexerAction
 	for i := 0; i < len(l.lexerActions); i++ {
 		_, ok := l.lexerActions[i].(*LexerIndexedCustomAction)
 		if l.lexerActions[i].getIsPositionDependent() && !ok {
 			if updatedLexerActions == nil {
-				updatedLexerActions = make([]LexerAction, 0)
-
-				for _, a := range l.lexerActions {
-					updatedLexerActions = append(updatedLexerActions, a)
-				}
+				updatedLexerActions = make([]LexerAction, 0, len(l.lexerActions))
+				updatedLexerActions = append(updatedLexerActions, l.lexerActions...)
 			}
-
 			updatedLexerActions[i] = NewLexerIndexedCustomAction(offset, l.lexerActions[i])
 		}
 	}

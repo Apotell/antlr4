@@ -7,11 +7,14 @@
 package org.antlr.v4.codegen.target;
 
 import org.antlr.v4.codegen.CodeGenerator;
+import org.antlr.v4.codegen.SourceType;
 import org.antlr.v4.codegen.Target;
+import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
-import org.stringtemplate.v4.StringRenderer;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class JavaTarget extends Target {
 	/**
@@ -30,7 +33,7 @@ public class JavaTarget extends Target {
 		"void", "volatile", "while",
 
 		// misc
-		"rule", "parserRule"
+		"rule", "parserRule", "reset"
 	));
 
 	public JavaTarget(CodeGenerator gen) {
@@ -52,5 +55,19 @@ public class JavaTarget extends Target {
 	@Override
 	public boolean isATNSerializedAsInts() {
 		return false;
+	}
+
+	@Override
+	public boolean supportsSplitParser() { return true; }
+
+	@Override
+	public String getRecognizerFileName(SourceType sourceType) {
+		ST extST = getTemplates().getInstanceOf("codeFileExtension");
+		String recognizerName = gen.g.getRecognizerName();
+		if (sourceType == SourceType.SOURCE_CONTEXTS)
+			recognizerName += "Contexts";
+		else if (sourceType == SourceType.SOURCE_DFA)
+			recognizerName += "DFA";
+		return recognizerName + extST.render();
 	}
 }

@@ -197,7 +197,7 @@ type AND struct {
 
 func NewAND(a, b SemanticContext) *AND {
 
-	operands := NewJStore[SemanticContext, Comparator[SemanticContext]](semctxEqInst)
+	operands := NewJStore[SemanticContext, Comparator[SemanticContext]](semctxEqInst, SemanticContextCollection, "NewAND() operands")
 	if aa, ok := a.(*AND); ok {
 		for _, o := range aa.opnds {
 			operands.Put(o)
@@ -229,9 +229,7 @@ func NewAND(a, b SemanticContext) *AND {
 
 	vs := operands.Values()
 	opnds := make([]SemanticContext, len(vs))
-	for i, v := range vs {
-		opnds[i] = v.(SemanticContext)
-	}
+	copy(opnds, vs)
 
 	and := new(AND)
 	and.opnds = opnds
@@ -348,7 +346,7 @@ type OR struct {
 
 func NewOR(a, b SemanticContext) *OR {
 
-	operands := NewJStore[SemanticContext, Comparator[SemanticContext]](semctxEqInst)
+	operands := NewJStore[SemanticContext, Comparator[SemanticContext]](semctxEqInst, SemanticContextCollection, "NewOR() operands")
 	if aa, ok := a.(*OR); ok {
 		for _, o := range aa.opnds {
 			operands.Put(o)
@@ -381,9 +379,7 @@ func NewOR(a, b SemanticContext) *OR {
 	vs := operands.Values()
 
 	opnds := make([]SemanticContext, len(vs))
-	for i, v := range vs {
-		opnds[i] = v.(SemanticContext)
-	}
+	copy(opnds, vs)
 
 	o := new(OR)
 	o.opnds = opnds

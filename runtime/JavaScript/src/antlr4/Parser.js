@@ -289,6 +289,15 @@ export default class Parser extends Recognizer {
     }
 
     /**
+	 * Gets the number of syntax errors reported during parsing. This value is
+	 * incremented each time {@link //notifyErrorListeners} is called.	 
+	 */
+    get syntaxErrorsCount() {
+        return this._syntaxErrors;
+    }
+
+
+    /**
      * Match needs to return the current input symbol, which gets put
      * into the label for the associated token ref; e.g., x=ID.
      */
@@ -305,7 +314,7 @@ export default class Parser extends Recognizer {
         this._syntaxErrors += 1;
         const line = offendingToken.line;
         const column = offendingToken.column;
-        const listener = this.getErrorListenerDispatch();
+        const listener = this.getErrorListener();
         listener.syntaxError(this, offendingToken, line, column, msg, err);
     }
 
@@ -594,14 +603,8 @@ export default class Parser extends Recognizer {
         }
     }
 
-    /*
-        "			printer = function() {\r\n" +
-        "				this.println = function(s) { document.getElementById('output') += s + '\\n'; }\r\n" +
-        "				this.print = function(s) { document.getElementById('output') += s; }\r\n" +
-        "			};\r\n" +
-        */
     getSourceName() {
-        return this._input.sourceName;
+        return this._input.getSourceName();
     }
 
     /**
